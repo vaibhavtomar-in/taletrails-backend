@@ -1,10 +1,13 @@
 package com.taletrails.taletrails_backend.provider.impl;
 
 import com.taletrails.taletrails_backend.entities.User;
+import com.taletrails.taletrails_backend.entities.UserQuizAnswer;
 import com.taletrails.taletrails_backend.exception.LogitracError;
 import com.taletrails.taletrails_backend.exception.LogitrackException;
 import com.taletrails.taletrails_backend.manager.data.UserInfo;
+import com.taletrails.taletrails_backend.manager.data.UserQuizInfo;
 import com.taletrails.taletrails_backend.provider.UserProvider;
+import com.taletrails.taletrails_backend.repositories.UserQuizAnswerRepository;
 import com.taletrails.taletrails_backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,8 @@ public class MysqlUserProvider implements UserProvider {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    UserQuizAnswerRepository quizAnswerRepository;
 
     @Autowired
     public MysqlUserProvider(UserRepository userRepository) {
@@ -43,6 +48,22 @@ public class MysqlUserProvider implements UserProvider {
     public Optional<UserInfo> getUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         return userOptional.map(this::transform);
+    }
+
+    @Override
+    public void saveUserQuizAnswers(UserQuizInfo quizInfo) {
+        for (UserQuizInfo.Answer a : quizInfo.getAnswers()) {
+            UserQuizAnswer entity = new UserQuizAnswer();
+            entity.setUser(userRepository.findById(quizInfo.getUserId()).get());
+            entity.setQuestionId(a.getQuestionId());
+            entity.setQuestion(a.getQuestion());
+            entity.setSelectedOption(a.getSelectedOption());
+            quizAnswerRepository.save(entity);
+        }
+
+        User user = userRepository.findById(quizInfo.getUserId()).get();
+        user.setIsQuizTaken(1);
+        userRepository.save(user);
     }
 
     private UserInfo transform(User user) {

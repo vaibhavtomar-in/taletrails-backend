@@ -6,6 +6,7 @@ import com.taletrails.taletrails_backend.exception.LogitrackException;
 import com.taletrails.taletrails_backend.manager.UserManager;
 import com.taletrails.taletrails_backend.manager.data.UserInfo;
 import com.taletrails.taletrails_backend.manager.data.UserLogin;
+import com.taletrails.taletrails_backend.manager.data.UserQuizInfo;
 import com.taletrails.taletrails_backend.provider.UserProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class UserManagerImpl implements UserManager {
 
     @Autowired
     UserProvider userProvider;
+
 
     public UserLogin registerUser(UserInfo userInfo) {
         User user = userProvider.createUser(userInfo);
@@ -57,4 +59,17 @@ public class UserManagerImpl implements UserManager {
 
         return userInfo.get();
     }
+
+    @Override
+    public void submitQuizAnswers(UserQuizInfo quizInfo) {
+        Optional<UserInfo> optionalUser = userProvider.getUserById(quizInfo.getUserId());
+
+        if (optionalUser.isEmpty()) {
+            throw new LogitrackException(LogitracError.ACCOUNT_DOES_NOT_EXIST);
+        }
+
+        userProvider.saveUserQuizAnswers(quizInfo);
+    }
+
+
 }

@@ -4,9 +4,12 @@ import com.taletrails.taletrails_backend.controller.dto.*;
 import com.taletrails.taletrails_backend.manager.UserManager;
 import com.taletrails.taletrails_backend.manager.data.UserInfo;
 import com.taletrails.taletrails_backend.manager.data.UserLogin;
+import com.taletrails.taletrails_backend.manager.data.UserQuizInfo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -41,8 +44,28 @@ public class UserController {
         UserInfo userInfo = userManager.getUserDetails(userId);
         return transform(userInfo);
     }
+    @PostMapping("/submit-quiz")
+    public SuccessResponse submitQuiz(HttpServletRequest request, @RequestBody UserQuizResponse userQuizResponse) {
+        UserQuizInfo quizInfo = transform(userQuizResponse);
+        userManager.submitQuizAnswers(quizInfo);
+        return new SuccessResponse("Quiz submitted successfully");
+    }
 
+    private UserQuizInfo transform(UserQuizResponse response) {
+        UserQuizInfo quizInfo = new UserQuizInfo();
+        quizInfo.setUserId(response.getUserId());
 
+        List<UserQuizInfo.Answer> infoAnswers = response.getAnswers().stream().map(answer -> {
+            UserQuizInfo.Answer a = new UserQuizInfo.Answer();
+            a.setQuestionId(answer.getQuestionId());
+            a.setQuestion(answer.getQuestion());
+            a.setSelectedOption(answer.getSelectedOption());
+            return a;
+        }).toList();
+
+        quizInfo.setAnswers(infoAnswers);
+        return quizInfo;
+    }
 
 
     private UserDetails transform(UserInfo userInfo) {
