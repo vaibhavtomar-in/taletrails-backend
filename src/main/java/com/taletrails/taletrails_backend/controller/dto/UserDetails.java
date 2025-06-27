@@ -4,7 +4,8 @@ public class UserDetails {
     private String name;
     private String phoneNumber;
     private String pincode;
-     private String email;
+    private String email;
+    private boolean quizTaken;
 
     // Getters and Setters
     public String getName() { return name; }
@@ -22,5 +23,13 @@ public class UserDetails {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isQuizTaken() {
+        return quizTaken;
+    }
+
+    public void setQuizTaken(boolean quizTaken) {
+        this.quizTaken = quizTaken;
     }
 }

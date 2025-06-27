@@ -26,6 +26,17 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "quiztaken")
+    private int isQuizTaken;
+
+    public int getIsQuizTaken() {
+        return isQuizTaken;
+    }
+
+    public void setIsQuizTaken(int isQuizTaken) {
+        this.isQuizTaken = isQuizTaken;
+    }
+
     public Long getId() {
         return id;
     }

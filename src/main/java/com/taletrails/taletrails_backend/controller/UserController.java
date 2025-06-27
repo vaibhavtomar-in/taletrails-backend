@@ -48,6 +48,8 @@ public class UserController {
         userDetails.setName(userInfo.getName());
         userDetails.setPhoneNumber(userInfo.getPhoneNumber());
         userDetails.setPincode(userInfo.getPincode());
+        userDetails.setQuizTaken(userInfo.isQuizTaken());
+        userDetails.setEmail(userInfo.getEmail());
 
         return userDetails;
     }
@@ -58,6 +60,7 @@ public class UserController {
         userInfo.setPassword(request.getPassword());
         userInfo.setPhoneNumber(request.getPhoneNumber());
         userInfo.setPincode(request.getPincode());
+        userInfo.setEmail(request.getEmail());
         return userInfo;
     }
 }

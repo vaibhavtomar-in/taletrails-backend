@@ -7,7 +7,7 @@ public class UserInfo {
     private String password;
     private String pincode;
     private String email;
-
+    private boolean quizTaken;
 
     // Constructor
     public UserInfo(){
@@ -30,6 +30,14 @@ public class UserInfo {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isQuizTaken() {
+        return quizTaken;
+    }
+
+    public void setQuizTaken(boolean quizTaken) {
+        this.quizTaken = quizTaken;
     }
 
     public String getName() { return name; }
