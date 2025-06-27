@@ -22,6 +22,7 @@ public class UserController {
         UserLoginInfo userLoginInfo = new UserLoginInfo();
         userLoginInfo.setUserId(userLogin.getUserId());
         userLoginInfo.setName(userLogin.getName());
+        userLoginInfo.setIsQuiz(userLogin.getIsquizTken());
         return userLoginInfo;
     }
 
@@ -31,6 +32,7 @@ public class UserController {
         UserLoginInfo userId1 = new UserLoginInfo();
         userId1.setUserId(userId.getUserId());
         userId1.setName(userId.getName());
+        userId1.setIsQuiz(userId.getIsquizTken());
         return  userId1;
     }
 

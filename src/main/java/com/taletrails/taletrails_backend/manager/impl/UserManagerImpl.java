@@ -23,6 +23,7 @@ public class UserManagerImpl implements UserManager {
         UserLogin user1 = new UserLogin();
         user1.setUserId(user.getId());
         user1.setName(user.getName());
+        user1.setIsquizTken(user.getIsQuizTaken());
         return user1;
     }
 
@@ -41,6 +42,7 @@ public class UserManagerImpl implements UserManager {
         UserLogin user1 = new UserLogin();
         user1.setUserId(user.getId());
         user1.setName(user.getName());
+        user1.setIsquizTken(user.getIsQuizTaken());
 
         return user1;
     }
