@@ -9,4 +9,6 @@ public interface UserManager {
     UserLogin loginUser(String phoneNumber, String password);
     UserInfo getUserDetails(Long userId);
     void submitQuizAnswers(UserQuizInfo quizInfo);
+    UserQuizInfo getQuizAnswers(Long userId);
+
 }

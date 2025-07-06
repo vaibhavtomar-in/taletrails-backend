@@ -71,5 +71,15 @@ public class UserManagerImpl implements UserManager {
         userProvider.saveUserQuizAnswers(quizInfo);
     }
 
+    @Override
+    public UserQuizInfo getQuizAnswers(Long userId) {
+        Optional<UserInfo> user = userProvider.getUserById(userId);
+        if (user.isEmpty()) {
+            throw new LogitrackException(LogitracError.ACCOUNT_DOES_NOT_EXIST);
+        }
+        return userProvider.getQuizAnswersByUserId(userId);
+    }
+
+
 
 }

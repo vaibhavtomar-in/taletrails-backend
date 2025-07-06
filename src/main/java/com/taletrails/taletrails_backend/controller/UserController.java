@@ -51,6 +51,28 @@ public class UserController {
         return new SuccessResponse("Quiz submitted successfully");
     }
 
+    @GetMapping("/quiz-answers")
+    public UserQuizResponse getUserQuizAnswers(@RequestParam Long userId) {
+        UserQuizInfo quizInfo = userManager.getQuizAnswers(userId);
+        return transform(quizInfo);
+    }
+
+    private UserQuizResponse transform(UserQuizInfo quizInfo) {
+        UserQuizResponse response = new UserQuizResponse();
+        response.setUserId(quizInfo.getUserId());
+
+        List<UserQuizResponse.Answer> answerList = quizInfo.getAnswers().stream().map(infoAnswer -> {
+            UserQuizResponse.Answer dto = new UserQuizResponse.Answer();
+            dto.setQuestionId(infoAnswer.getQuestionId());
+            dto.setQuestion(infoAnswer.getQuestion());
+            dto.setSelectedOption(infoAnswer.getSelectedOption());
+            return dto;
+        }).toList();
+
+        response.setAnswers(answerList);
+        return response;
+    }
+
     private UserQuizInfo transform(UserQuizResponse response) {
         UserQuizInfo quizInfo = new UserQuizInfo();
         quizInfo.setUserId(response.getUserId());

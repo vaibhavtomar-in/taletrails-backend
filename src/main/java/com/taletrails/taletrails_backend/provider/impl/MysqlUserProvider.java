@@ -12,6 +12,7 @@ import com.taletrails.taletrails_backend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -65,6 +66,25 @@ public class MysqlUserProvider implements UserProvider {
         user.setIsQuizTaken(1);
         userRepository.save(user);
     }
+    @Override
+    public UserQuizInfo getQuizAnswersByUserId(Long userId) {
+        List<UserQuizAnswer> answers = quizAnswerRepository.findByUser_Id(userId);
+
+        UserQuizInfo quizInfo = new UserQuizInfo();
+        quizInfo.setUserId(userId);
+
+        List<UserQuizInfo.Answer> transformedAnswers = answers.stream().map(entity -> {
+            UserQuizInfo.Answer answer = new UserQuizInfo.Answer();
+            answer.setQuestionId(entity.getQuestionId());
+            answer.setQuestion(entity.getQuestion());
+            answer.setSelectedOption(entity.getSelectedOption());
+            return answer;
+        }).toList();
+
+        quizInfo.setAnswers(transformedAnswers);
+        return quizInfo;
+    }
+
 
     private UserInfo transform(User user) {
         UserInfo userInfo = new UserInfo();

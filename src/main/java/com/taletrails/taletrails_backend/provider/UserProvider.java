@@ -11,4 +11,6 @@ public interface UserProvider {
     Optional<User> getUserByPhoneNumber(String phoneNumber);
     Optional<UserInfo> getUserById(Long userId);
     void saveUserQuizAnswers(UserQuizInfo quizInfo);
+    UserQuizInfo getQuizAnswersByUserId(Long userId);
+
 }
