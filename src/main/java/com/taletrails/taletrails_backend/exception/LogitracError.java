@@ -25,6 +25,11 @@ public enum LogitracError {
             4,
             "password invalid",
             "password entered doesn't match the account's password"
+    ),
+    INVALID_REQUEST_DATA(
+            5,
+            "Data invalid",
+            "Data entered is invalid may contain nulls or be missing required params"
     );
 
 
