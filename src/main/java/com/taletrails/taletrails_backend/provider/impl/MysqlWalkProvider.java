@@ -5,6 +5,7 @@ import com.taletrails.taletrails_backend.entities.User;
 import com.taletrails.taletrails_backend.entities.Walk;
 import com.taletrails.taletrails_backend.exception.LogitracError;
 import com.taletrails.taletrails_backend.exception.LogitrackException;
+import com.taletrails.taletrails_backend.manager.data.WalkDetailInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkSummaryInfo;
 import com.taletrails.taletrails_backend.provider.WalkProvider;
@@ -73,5 +74,43 @@ public class MysqlWalkProvider implements WalkProvider {
 
         return summaries;
     }
+    @Override
+    public Optional<WalkDetailInfo> getWalkDetailsById(Long walkId) {
+        Optional<Walk> walkOpt = walkRepository.findById(walkId);
+        if (walkOpt.isEmpty()) return Optional.empty();
+
+        Walk walk = walkOpt.get();
+        List<Route> routeList = routeRepository.findByWalk(walk);
+
+        WalkDetailInfo info = new WalkDetailInfo();
+        info.setWalkId(walk.getId());
+        info.setGenre(walk.getGenre());
+        info.setNoOfStops(walk.getNoOfStops());
+        info.setStopDistance(walk.getStopDist());
+
+        int unlocked = (int) routeList.stream().filter(r -> r.getLockStatus() == 1).count();
+        info.setPlacesUnlocked(unlocked);
+        info.setPlacesLocked(walk.getNoOfStops() - unlocked);
+
+        List<WalkDetailInfo.Route> routeInfos = routeList.stream().map(r -> {
+            WalkDetailInfo.Route route = new WalkDetailInfo.Route();
+            route.setRouteId(r.getId());
+            route.setOrder(r.getRouteOrder());
+            route.setLatitude(r.getLatitude());
+            route.setLongitude(r.getLongitude());
+            route.setLockStatus(r.getLockStatus());
+            if (r.getLockStatus() == 1) {
+                route.setStorySegment(r.getStorySegment()); // ✅ Only if unlocked
+            }
+//            else {
+//                route.setStorySegment(null); // Optional: to hide locked content
+//            }
+            return route;
+        }).toList();
+
+        info.setRoutes(routeInfos);
+        return Optional.of(info);
+    }
+
 
 }

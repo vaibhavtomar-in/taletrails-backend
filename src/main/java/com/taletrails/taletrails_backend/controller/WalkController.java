@@ -3,8 +3,10 @@ package com.taletrails.taletrails_backend.controller;
 
 import com.taletrails.taletrails_backend.controller.dto.AddWalkRequest;
 import com.taletrails.taletrails_backend.controller.dto.SuccessResponse;
+import com.taletrails.taletrails_backend.controller.dto.WalkDetailsResponse;
 import com.taletrails.taletrails_backend.controller.dto.WalkSummary;
 import com.taletrails.taletrails_backend.manager.WalkManager;
+import com.taletrails.taletrails_backend.manager.data.WalkDetailInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkSummaryInfo;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +40,41 @@ public class WalkController {
             return summary;
         }).collect(Collectors.toList());
     }
+    @GetMapping("/details")
+    public WalkDetailsResponse getWalkDetails(@RequestParam Long walkId) {
+        WalkDetailInfo info = walkManager.getWalkDetails(walkId);
+        return transform(info);
+    }
+
+    private WalkDetailsResponse transform(WalkDetailInfo info) {
+        WalkDetailsResponse response = new WalkDetailsResponse();
+        response.setWalkId(info.getWalkId());
+        response.setGenre(info.getGenre());
+        response.setNoOfStops(info.getNoOfStops());
+        response.setStopDistance(info.getStopDistance());
+        response.setPlacesUnlocked(info.getPlacesUnlocked());
+        response.setPlacesLocked(info.getPlacesLocked());
+
+        List<WalkDetailsResponse.RouteInfo> routeInfos = info.getRoutes().stream().map(r -> {
+            WalkDetailsResponse.RouteInfo ri = new WalkDetailsResponse.RouteInfo();
+            ri.setRouteId(r.getRouteId());
+            ri.setOrder(r.getOrder());
+            ri.setLatitude(r.getLatitude());
+            ri.setLongitude(r.getLongitude());
+            ri.setLockStatus(r.getLockStatus());
+            if (r.getLockStatus() == 1) {
+                ri.setStorySegment(r.getStorySegment()); // ✅ Only if unlocked
+            }
+//            else {
+//                ri.setStorySegment(null); // Optional: to hide locked content
+//            }
+            return ri;
+        }).toList();
+
+        response.setRoutes(routeInfos);
+        return response;
+    }
+
 
     WalkInfo transform(AddWalkRequest walkRequest){
         WalkInfo walkInfo = new WalkInfo();

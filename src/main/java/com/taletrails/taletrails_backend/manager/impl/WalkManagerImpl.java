@@ -3,6 +3,7 @@ package com.taletrails.taletrails_backend.manager.impl;
 import com.taletrails.taletrails_backend.exception.LogitracError;
 import com.taletrails.taletrails_backend.exception.LogitrackException;
 import com.taletrails.taletrails_backend.manager.WalkManager;
+import com.taletrails.taletrails_backend.manager.data.WalkDetailInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkSummaryInfo;
 import com.taletrails.taletrails_backend.provider.UserProvider;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WalkManagerImpl implements WalkManager {
@@ -67,5 +69,14 @@ public class WalkManagerImpl implements WalkManager {
         }
         return walkProvider.getWalksByUserId(userId);
     }
+    @Override
+    public WalkDetailInfo getWalkDetails(Long walkId) {
+        Optional<WalkDetailInfo> info = walkProvider.getWalkDetailsById(walkId);
+        if (info.isEmpty()) {
+            throw new LogitrackException(LogitracError.INVALID_REQUEST_DATA);
+        }
+        return info.get();
+    }
+
 
 }
