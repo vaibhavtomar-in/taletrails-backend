@@ -29,7 +29,7 @@ public class WalkController {
     }
 
     @GetMapping("/user-walks")
-    public List<WalkSummary> getWalksForUser(@RequestParam Long userId) {
+    public List<WalkSummary> getWalksForUser(HttpServletRequest request, @RequestParam Long userId) {
         List<WalkSummaryInfo> walkInfos = walkManager.getWalksByUserId(userId);
         return walkInfos.stream().map(info -> {
             WalkSummary summary = new WalkSummary();
@@ -41,9 +41,24 @@ public class WalkController {
         }).collect(Collectors.toList());
     }
     @GetMapping("/details")
-    public WalkDetailsResponse getWalkDetails(@RequestParam Long walkId) {
+    public WalkDetailsResponse getWalkDetails(HttpServletRequest request, @RequestParam Long walkId) {
         WalkDetailInfo info = walkManager.getWalkDetails(walkId);
         return transform(info);
+    }
+
+    @GetMapping("/checkin")
+    public SuccessResponse checkInAtRoute(
+            HttpServletRequest request,
+            @RequestParam double userLat,
+            @RequestParam double userLng,
+            @RequestParam Long routeId) {
+
+        boolean unlocked = walkManager.attemptCheckIn(userLat, userLng, routeId);
+        if (unlocked) {
+            return new SuccessResponse("You are within range! Check-in successful.");
+        } else {
+            return new SuccessResponse("You are not close enough to this stop.");
+        }
     }
 
     private WalkDetailsResponse transform(WalkDetailInfo info) {

@@ -10,5 +10,7 @@ public interface WalkManager {
     void saveWalk(WalkInfo walkInfo);
     List<WalkSummaryInfo> getWalksByUserId(Long userId);
     WalkDetailInfo getWalkDetails(Long walkId);
+    boolean attemptCheckIn(double userLat, double userLng, Long routeId);
+
 
 }

@@ -112,5 +112,17 @@ public class MysqlWalkProvider implements WalkProvider {
         return Optional.of(info);
     }
 
+    @Override
+    public Optional<Route> getRouteById(Long routeId) {
+        return routeRepository.findById(routeId);
+    }
+
+    @Override
+    public void unlockRoute(Long routeId) {
+        routeRepository.findById(routeId).ifPresent(route -> {
+            route.setLockStatus(1);
+            routeRepository.save(route);
+        });
+    }
 
 }

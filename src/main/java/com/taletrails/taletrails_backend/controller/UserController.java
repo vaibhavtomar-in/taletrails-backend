@@ -30,7 +30,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public UserLoginInfo loginUser(@RequestBody UserLoginRequest loginRequest) {
+    public UserLoginInfo loginUser(HttpServletRequest request, @RequestBody UserLoginRequest loginRequest) {
         UserLogin userId = userManager.loginUser(loginRequest.getPhoneNumber(), loginRequest.getPassword());
         UserLoginInfo userId1 = new UserLoginInfo();
         userId1.setUserId(userId.getUserId());
@@ -52,7 +52,7 @@ public class UserController {
     }
 
     @GetMapping("/quiz-answers")
-    public UserQuizResponse getUserQuizAnswers(@RequestParam Long userId) {
+    public UserQuizResponse getUserQuizAnswers(HttpServletRequest request, @RequestParam Long userId) {
         UserQuizInfo quizInfo = userManager.getQuizAnswers(userId);
         return transform(quizInfo);
     }
