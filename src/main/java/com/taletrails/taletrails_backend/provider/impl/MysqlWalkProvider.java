@@ -154,7 +154,7 @@ public class MysqlWalkProvider implements WalkProvider {
                 .map(ans -> ans.getQuestionId() + ". " + ans.getQuestion() + ": " + ans.getSelectedOption())
                 .collect(Collectors.joining("|"));
 
-        String fullPrompt = String.format("Generate an interactive story in the genre %s based on the user's personality profile. Here are the question and answers:|%s Split the story into A teaser %d parts end each part with a cliff hanger to keep reader engaged and return ONLY a valid xml . output in this format ONLY: <teaser></teaser><part1>xyz</part1><part2>xyz</part2>..."
+        String fullPrompt = String.format("Generate an interactive story in the genre %s based on the user's personality profile. Here are the question and answers:|%s List out steps and rehearseSplit the story into A teaser and %d parts where end each part with a cliff hanger to keep reader engaged and return ONLY a valid xml . output in this format ONLY: <teaser></teaser><part1>xyz</part1><part2>xyz</part2>..."
                 , walkInfo.getGenre(), answerPrompt, walkInfo.getNoOfStops());
         logger.info("Prompt sent to HuggingFace:\n{}", fullPrompt);
         // Send API Request
