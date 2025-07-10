@@ -1,7 +1,10 @@
 package com.taletrails.taletrails_backend.provider.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taletrails.taletrails_backend.entities.Route;
 import com.taletrails.taletrails_backend.entities.User;
+import com.taletrails.taletrails_backend.entities.UserQuizAnswer;
 import com.taletrails.taletrails_backend.entities.Walk;
 import com.taletrails.taletrails_backend.exception.LogitracError;
 import com.taletrails.taletrails_backend.exception.LogitrackException;
@@ -10,17 +13,28 @@ import com.taletrails.taletrails_backend.manager.data.WalkInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkSummaryInfo;
 import com.taletrails.taletrails_backend.provider.WalkProvider;
 import com.taletrails.taletrails_backend.repositories.RouteRepository;
+import com.taletrails.taletrails_backend.repositories.UserQuizAnswerRepository;
 import com.taletrails.taletrails_backend.repositories.UserRepository;
 import com.taletrails.taletrails_backend.repositories.WalkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class MysqlWalkProvider implements WalkProvider {
+    private static final Logger logger = LoggerFactory.getLogger(MysqlWalkProvider.class);
 
     @Autowired
     WalkRepository walkRepository;
@@ -30,6 +44,13 @@ public class MysqlWalkProvider implements WalkProvider {
 
     @Autowired
     RouteRepository routeRepository;
+    @Autowired
+    UserQuizAnswerRepository answerRepo;
+
+
+    private final String HF_API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions";
+    @Value("${HF_API_KEY}")
+    private String HF_API_KEY;
 
     @Override
     public void saveWalkWithRoutes(WalkInfo walkInfo) {
@@ -41,7 +62,7 @@ public class MysqlWalkProvider implements WalkProvider {
         walk.setGenre(walkInfo.getGenre());
         walk.setStopDist(walkInfo.getStopDist());
         walk.setNoOfStops(walkInfo.getNoOfStops());
-
+//        walk.setTeaser("This is teaser for the stop");
         walk = walkRepository.save(walk);
 
         for (WalkInfo.Route routeData : walkInfo.getRoute()) {
@@ -51,7 +72,7 @@ public class MysqlWalkProvider implements WalkProvider {
             route.setLongitude(routeData.getLongitude());
             route.setRouteOrder(routeData.getOrder());
             route.setLockStatus(0);
-            route.setStorySegment("A new mystery unfolds at this stop. You feel a shift in the atmosphere...");
+//            route.setStorySegment("A new mystery unfolds at this stop. You feel a shift in the atmosphere...");
 
             routeRepository.save(route);
         }
@@ -123,6 +144,107 @@ public class MysqlWalkProvider implements WalkProvider {
             route.setLockStatus(1);
             routeRepository.save(route);
         });
+    }
+
+    @Async
+    public void generateAndAttachStory(WalkInfo walkInfo) {
+        List<UserQuizAnswer> answers = answerRepo.findByUser_Id(walkInfo.getUserId());
+
+        String answerPrompt = answers.stream()
+                .map(ans -> ans.getQuestionId() + ". " + ans.getQuestion() + ": " + ans.getSelectedOption())
+                .collect(Collectors.joining("|"));
+
+        String fullPrompt = String.format("Generate an interactive story in the genre %s based on the user's personality profile. Here are the question and answers:|%s Split the story into A teaser %d parts end each part with a cliff hanger to keep reader engaged and return ONLY a valid xml . output in this format ONLY: <teaser></teaser><part1>xyz</part1><part2>xyz</part2>..."
+                , walkInfo.getGenre(), answerPrompt, walkInfo.getNoOfStops());
+        logger.info("Prompt sent to HuggingFace:\n{}", fullPrompt);
+        // Send API Request
+        String xmlResponse = callHuggingFaceAPI(fullPrompt);
+        if (xmlResponse == null) {
+            logger.error("Hugging Face response is null");
+            return;
+        }
+
+        logger.info("Received XML response:\n{}", xmlResponse);
+
+        // Extract parts using regex
+        String teaser = extractTag(xmlResponse, "teaser");
+        logger.info("Extracted Teaser:\n{}", teaser);
+        Map<Integer, String> parts = new HashMap<>();
+        for (int i = 1; i <= walkInfo.getNoOfStops(); i++) {
+            String part = extractTag(xmlResponse, "part" + i);
+            logger.info("Extracted Part {}:\n{}", i, part);
+            if (part != null) parts.put(i, part);
+        }
+
+        // Update Walk and Routes
+        Optional<Walk> walkOpt = walkRepository.findByUser_IdOrderByIdDesc(walkInfo.getUserId()).stream().findFirst();
+        if (walkOpt.isEmpty()) return;
+        Walk walk = walkOpt.get();
+        walk.setTeaser(teaser);
+        walkRepository.save(walk);
+
+        List<Route> routes = routeRepository.findByWalk(walk);
+        for (Route route : routes) {
+            route.setStorySegment(parts.getOrDefault(route.getRouteOrder() , "To be revealed..."));
+
+            routeRepository.save(route);
+        }
+//        List<Route> routes = routeRepository.findByWalk(walk);
+//        for (Route route : routes) {
+//            int partIndex = route.getRouteOrder() + 1;
+//            String segment = parts.getOrDefault(partIndex, "To be revealed...");
+//            logger.info("Setting story segment for route {}: {}", route.getId(), segment);
+//            route.setStorySegment(segment);
+//            routeRepository.save(route);
+//        }
+    }
+
+    private String callHuggingFaceAPI(String prompt) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            String requestBody = """
+                {
+                  "messages": [
+                    {
+                      "role": "user",
+                      "content": "%s"
+                    }
+                  ],
+                  "model": "mistralai/mistral-7b-instruct",
+                  "stream": false
+                }
+            """.formatted(prompt.replace("\"", "\\\""));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(HF_API_URL))
+                    .header("Authorization", "Bearer " + HF_API_KEY)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return extractContentFromJson(response.body());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String extractContentFromJson(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(json);
+            return root.path("choices").get(0).path("message").path("content").asText();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String extractTag(String xml, String tag) {
+        Pattern pattern = Pattern.compile("<%s>(.*?)</%s>".formatted(tag, tag), Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(xml);
+        return matcher.find() ? matcher.group(1).trim() : null;
     }
 
 }

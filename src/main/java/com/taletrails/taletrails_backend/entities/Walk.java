@@ -19,6 +19,20 @@ public class Walk {
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
+    @Column(columnDefinition = "LONGTEXT")
+    private String teaser;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTeaser() {
+        return teaser;
+    }
+
+    public void setTeaser(String teaser) {
+        this.teaser = teaser;
+    }
 
     public Long getId() {
         return id;

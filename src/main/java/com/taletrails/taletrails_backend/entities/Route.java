@@ -18,7 +18,8 @@ public class Route {
 
     private int lockStatus = 0;
 
-    private String storySegment = "As you arrive at this stop, a gentle breeze whispers through the trees, hinting at the adventure ahead...";
+    @Column(columnDefinition = "LONGTEXT")
+    private String storySegment;
 
     @ManyToOne
     @JoinColumn(name = "walk_id", referencedColumnName = "id", nullable = false)

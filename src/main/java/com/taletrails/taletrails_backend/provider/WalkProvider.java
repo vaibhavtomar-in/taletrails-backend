@@ -14,6 +14,7 @@ public interface WalkProvider {
     Optional<WalkDetailInfo> getWalkDetailsById(Long walkId);
     Optional<Route> getRouteById(Long routeId);
     void unlockRoute(Long routeId);
+    void generateAndAttachStory(WalkInfo walkInfo);
 
 
 

@@ -65,6 +65,7 @@ public class WalkManagerImpl implements WalkManager {
             }
         }
         walkProvider.saveWalkWithRoutes(walkInfo);
+        walkProvider.generateAndAttachStory(walkInfo);
     }
 
     @Override

@@ -11,5 +11,6 @@ import java.util.List;
 public interface WalkRepository extends JpaRepository<Walk, Long> {
     // You can add custom methods if needed, e.g. findByUserId
     List<Walk> findByUser(User user);
+    List<Walk> findByUser_IdOrderByIdDesc(Long userId);
 
 }
