@@ -72,6 +72,8 @@ public class MysqlWalkProvider implements WalkProvider {
             route.setLongitude(routeData.getLongitude());
             route.setRouteOrder(routeData.getOrder());
             route.setLockStatus(0);
+            logger.info("route loc {} : lat {} ,long {}", routeData.getOrder(),routeData.getLatitude(),routeData.getLongitude());
+
 //            route.setStorySegment("A new mystery unfolds at this stop. You feel a shift in the atmosphere...");
 
             routeRepository.save(route);
