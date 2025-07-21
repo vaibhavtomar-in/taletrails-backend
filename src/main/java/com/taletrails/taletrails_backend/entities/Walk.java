@@ -22,6 +22,17 @@ public class Walk {
     @Column(columnDefinition = "LONGTEXT")
     private String teaser;
 
+    @Column(name = "status")
+    private String status = "IN-PROGRESS";
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }

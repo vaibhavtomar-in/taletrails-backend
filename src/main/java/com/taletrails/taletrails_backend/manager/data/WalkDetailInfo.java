@@ -10,6 +10,7 @@ public class WalkDetailInfo {
     private int placesUnlocked;
     private int placesLocked;
     private List<Route> routes;
+    private String status;
 
 
     public static class Route {
@@ -47,7 +48,13 @@ public class WalkDetailInfo {
     // Getters and setters
 
 
+    public String getStatus() {
+        return status;
+    }
 
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Long getWalkId() { return walkId; }
     public void setWalkId(Long walkId) { this.walkId = walkId; }

@@ -69,7 +69,7 @@ public class WalkController {
         response.setStopDistance(info.getStopDistance());
         response.setPlacesUnlocked(info.getPlacesUnlocked());
         response.setPlacesLocked(info.getPlacesLocked());
-        response.setStatus("IN-PROGRESS");
+        response.setStatus(info.getStatus());
 
         List<WalkDetailsResponse.RouteInfo> routeInfos = info.getRoutes().stream().map(r -> {
             WalkDetailsResponse.RouteInfo ri = new WalkDetailsResponse.RouteInfo();

@@ -114,7 +114,7 @@ public class MysqlWalkProvider implements WalkProvider {
         int unlocked = (int) routeList.stream().filter(r -> r.getLockStatus() == 1).count();
         info.setPlacesUnlocked(unlocked);
         info.setPlacesLocked(walk.getNoOfStops() - unlocked);
-
+        info.setStatus(walk.getStatus());
         List<WalkDetailInfo.Route> routeInfos = routeList.stream().map(r -> {
             WalkDetailInfo.Route route = new WalkDetailInfo.Route();
             route.setRouteId(r.getId());
@@ -146,6 +146,14 @@ public class MysqlWalkProvider implements WalkProvider {
             route.setLockStatus(1);
             routeRepository.save(route);
         });
+        WalkDetailInfo walk = getWalkDetailsById(routeRepository.findById(routeId).get().getWalk().getId()).get();
+        boolean allLocked = walk.getRoutes().stream().allMatch(route -> route.getLockStatus() == 1);
+        if(allLocked){
+            Walk walkEntity = walkRepository.findById(walk.getWalkId()).get();
+            walkEntity.setStatus("COMPLETED");
+            walkRepository.save(walkEntity);
+        }
+
     }
 
     @Async

@@ -1,6 +1,7 @@
 package com.taletrails.taletrails_backend.manager.impl;
 
 import com.taletrails.taletrails_backend.entities.Route;
+import com.taletrails.taletrails_backend.entities.Walk;
 import com.taletrails.taletrails_backend.exception.LogitracError;
 import com.taletrails.taletrails_backend.exception.LogitrackException;
 import com.taletrails.taletrails_backend.manager.WalkManager;
@@ -112,6 +113,8 @@ public class WalkManagerImpl implements WalkManager {
         if (isInside && route.getLockStatus() == 0) {
             walkProvider.unlockRoute(routeId); // delegate to provider
         }
+
+
 
         return isInside;
     }
