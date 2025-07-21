@@ -12,6 +12,7 @@ public class WalkDetailsResponse {
     private int placesUnlocked;
     private int placesLocked;
     private List<RouteInfo> routes;
+    private String status;
 //    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class RouteInfo {
         private Long routeId;
@@ -67,4 +68,12 @@ public class WalkDetailsResponse {
 
     public List<RouteInfo> getRoutes() { return routes; }
     public void setRoutes(List<RouteInfo> routes) { this.routes = routes; }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
