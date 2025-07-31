@@ -16,6 +16,7 @@ import com.taletrails.taletrails_backend.repositories.RouteRepository;
 import com.taletrails.taletrails_backend.repositories.UserQuizAnswerRepository;
 import com.taletrails.taletrails_backend.repositories.UserRepository;
 import com.taletrails.taletrails_backend.repositories.WalkRepository;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -31,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.locationtech.jts.geom.*;
 
 @Service
 public class MysqlWalkProvider implements WalkProvider {
@@ -62,9 +64,12 @@ public class MysqlWalkProvider implements WalkProvider {
         walk.setGenre(walkInfo.getGenre());
         walk.setStopDist(walkInfo.getStopDist());
         walk.setNoOfStops(walkInfo.getNoOfStops());
+        walk.setTotalDistance(1);
 //        walk.setTeaser("This is teaser for the stop");
         walk = walkRepository.save(walk);
-
+        GeometryFactory geometryFactory = new GeometryFactory();
+        Route previousRoute = null;
+        int distanceMeters = 0;
         for (WalkInfo.Route routeData : walkInfo.getRoute()) {
             Route route = new Route();
             route.setWalk(walk);
@@ -74,10 +79,26 @@ public class MysqlWalkProvider implements WalkProvider {
             route.setLockStatus(0);
             logger.info("route loc {} : lat {} ,long {}", routeData.getOrder(),routeData.getLatitude(),routeData.getLongitude());
 
-//            route.setStorySegment("A new mystery unfolds at this stop. You feel a shift in the atmosphere...");
+            // Calculate distance if previous route exists
+            if (previousRoute != null) {
+                Coordinate coord1 = new Coordinate(previousRoute.getLongitude(), previousRoute.getLatitude());
+                Coordinate coord2 = new Coordinate(route.getLongitude(), route.getLatitude());
 
+                Point point1 = geometryFactory.createPoint(coord1);
+                Point point2 = geometryFactory.createPoint(coord2);
+
+                distanceMeters += (int) (point1.distance(point2) * 111_000); // approx conversion: 1 deg ≈ 111 km
+
+            }
+
+            previousRoute = route;
             routeRepository.save(route);
         }
+
+        Walk walk1 = walkRepository.findById(walk.getId()).get();
+
+        walk1.setTotalDistance(distanceMeters);
+        walkRepository.save(walk1);
     }
     @Override
     public List<WalkSummaryInfo> getWalksByUserId(Long userId) {
@@ -91,7 +112,7 @@ public class MysqlWalkProvider implements WalkProvider {
             info.setWalkId(walk.getId());
             info.setGenre(walk.getGenre());
             info.setNoOfStops(walk.getNoOfStops());
-            info.setStopDist(walk.getStopDist());
+            info.setStopDist(walk.getTotalDistance());
             summaries.add(info);
         }
 

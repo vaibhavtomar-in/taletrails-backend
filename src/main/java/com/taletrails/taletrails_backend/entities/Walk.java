@@ -25,6 +25,17 @@ public class Walk {
     @Column(name = "status")
     private String status = "IN-PROGRESS";
 
+    @Column(name = "totalDistance")
+    private Integer totalDistance;
+
+    public Integer getTotalDistance() {
+        return totalDistance;
+    }
+
+    public void setTotalDistance(Integer totalDistance) {
+        this.totalDistance = totalDistance;
+    }
+
     public String getStatus() {
         return status;
     }
