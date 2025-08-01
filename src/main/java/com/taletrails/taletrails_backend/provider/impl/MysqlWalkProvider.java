@@ -236,8 +236,8 @@ public class MysqlWalkProvider implements WalkProvider {
         WalkStatsResponse response = new WalkStatsResponse();
 
         // Get all walks of this user with status COMPLETE
-        List<Walk> completedWalks = walkRepository.findByUser_IdAndStatus(userId, "COMPLETE");
-        List<Walk> inProgressOrOtherWalks = walkRepository.findByUser_IdAndStatusNot(userId, "COMPLETE");
+        List<Walk> completedWalks = walkRepository.findByUser_IdAndStatus(userId, "COMPLETED");
+        List<Walk> inProgressOrOtherWalks = walkRepository.findByUser_IdAndStatusNot(userId, "COMPLETED");
 
 
 
