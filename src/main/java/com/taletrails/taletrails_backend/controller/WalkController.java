@@ -1,10 +1,7 @@
 package com.taletrails.taletrails_backend.controller;
 
 
-import com.taletrails.taletrails_backend.controller.dto.AddWalkRequest;
-import com.taletrails.taletrails_backend.controller.dto.SuccessResponse;
-import com.taletrails.taletrails_backend.controller.dto.WalkDetailsResponse;
-import com.taletrails.taletrails_backend.controller.dto.WalkSummary;
+import com.taletrails.taletrails_backend.controller.dto.*;
 import com.taletrails.taletrails_backend.manager.WalkManager;
 import com.taletrails.taletrails_backend.manager.data.WalkDetailInfo;
 import com.taletrails.taletrails_backend.manager.data.WalkInfo;
@@ -60,6 +57,12 @@ public class WalkController {
             return new SuccessResponse("You are not close enough to this stop.");
         }
     }
+
+    @GetMapping("/stats")
+    public WalkStatsResponse getUserWalkStats(@RequestParam Long userId) {
+        return walkManager.getWalkStatsByUser(userId);
+    }
+
 
     private WalkDetailsResponse transform(WalkDetailInfo info) {
         WalkDetailsResponse response = new WalkDetailsResponse();

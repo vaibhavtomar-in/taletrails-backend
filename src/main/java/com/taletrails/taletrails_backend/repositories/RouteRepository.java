@@ -10,4 +10,8 @@ import java.util.List;
 @Repository
 public interface RouteRepository extends JpaRepository<Route, Long> {
     List<Route> findByWalk(Walk walk);
+    List<Route> findByWalk_User_IdAndLockStatus(Long userId, int lockStatus);
+    List<Route> findByWalk_User_IdAndLockStatusNot(Long userId, int lockStatus);
+
+
 }

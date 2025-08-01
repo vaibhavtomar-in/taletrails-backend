@@ -1,5 +1,6 @@
 package com.taletrails.taletrails_backend.manager.impl;
 
+import com.taletrails.taletrails_backend.controller.dto.WalkStatsResponse;
 import com.taletrails.taletrails_backend.entities.Route;
 import com.taletrails.taletrails_backend.entities.Walk;
 import com.taletrails.taletrails_backend.exception.LogitracError;
@@ -118,6 +119,11 @@ public class WalkManagerImpl implements WalkManager {
 
         return isInside;
     }
+    @Override
+    public WalkStatsResponse getWalkStatsByUser(Long userId) {
+        return walkProvider.getWalkStatisticsByUser(userId);
+    }
+
 
     private double metersToDegrees(double meters, double latitude) {
         return meters / 111_000.0;

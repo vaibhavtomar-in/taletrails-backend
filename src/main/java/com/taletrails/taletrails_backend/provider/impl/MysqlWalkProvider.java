@@ -2,6 +2,7 @@ package com.taletrails.taletrails_backend.provider.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.taletrails.taletrails_backend.controller.dto.WalkStatsResponse;
 import com.taletrails.taletrails_backend.entities.Route;
 import com.taletrails.taletrails_backend.entities.User;
 import com.taletrails.taletrails_backend.entities.UserQuizAnswer;
@@ -229,6 +230,55 @@ public class MysqlWalkProvider implements WalkProvider {
 //            routeRepository.save(route);
 //        }
     }
+
+    @Override
+    public WalkStatsResponse getWalkStatisticsByUser(Long userId) {
+        WalkStatsResponse response = new WalkStatsResponse();
+
+        // Get all walks of this user with status COMPLETE
+        List<Walk> completedWalks = walkRepository.findByUser_IdAndStatus(userId, "COMPLETE");
+        List<Walk> inProgressOrOtherWalks = walkRepository.findByUser_IdAndStatusNot(userId, "COMPLETE");
+
+
+
+        int totalDistance = completedWalks.stream()
+                .mapToInt(w -> w.getTotalDistance() != null ? w.getTotalDistance() : 0)
+                .sum();
+
+        response.setTotalDistance(totalDistance);
+        response.setCompletedWalks(completedWalks.size());
+        response.setIncompleteWalks(inProgressOrOtherWalks.size());
+        // Visited routes
+        List<Route> visitedRoutes = routeRepository.findByWalk_User_IdAndLockStatus(userId, 0);
+        response.setPlacesVisited(visitedRoutes.size());
+
+        List<WalkStatsResponse.VisitedPlace> visited = visitedRoutes.stream().map(route -> {
+            WalkStatsResponse.VisitedPlace vp = new WalkStatsResponse.VisitedPlace();
+            vp.walkId = route.getWalk().getId();
+            vp.latitude = route.getLatitude();
+            vp.longitude = route.getLongitude();
+            vp.storySegment = route.getStorySegment();
+            return vp;
+        }).toList();
+
+        // Not visited routes
+        List<Route> notVisitedRoutes = routeRepository.findByWalk_User_IdAndLockStatusNot(userId, 0);
+        response.setPlacesNotVisited(notVisitedRoutes.size());
+
+        List<WalkStatsResponse.NotVisitedPlace> notVisited = notVisitedRoutes.stream().map(route -> {
+            WalkStatsResponse.NotVisitedPlace nvp = new WalkStatsResponse.NotVisitedPlace();
+            nvp.walkId = route.getWalk().getId();
+            nvp.latitude = route.getLatitude();
+            nvp.longitude = route.getLongitude();
+            return nvp;
+        }).toList();
+
+        response.setVisitedPlaces(visited);
+        response.setNotVisitedPlaces(notVisited);
+
+        return response;
+    }
+
 
     private String callHuggingFaceAPI(String prompt) {
         try {
