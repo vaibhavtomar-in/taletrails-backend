@@ -249,7 +249,7 @@ public class MysqlWalkProvider implements WalkProvider {
         response.setCompletedWalks(completedWalks.size());
         response.setIncompleteWalks(inProgressOrOtherWalks.size());
         // Visited routes
-        List<Route> visitedRoutes = routeRepository.findByWalk_User_IdAndLockStatus(userId, 0);
+        List<Route> visitedRoutes = routeRepository.findByWalk_User_IdAndLockStatus(userId, 1);
         response.setPlacesVisited(visitedRoutes.size());
 
         List<WalkStatsResponse.VisitedPlace> visited = visitedRoutes.stream().map(route -> {
@@ -262,7 +262,7 @@ public class MysqlWalkProvider implements WalkProvider {
         }).toList();
 
         // Not visited routes
-        List<Route> notVisitedRoutes = routeRepository.findByWalk_User_IdAndLockStatusNot(userId, 0);
+        List<Route> notVisitedRoutes = routeRepository.findByWalk_User_IdAndLockStatusNot(userId, 1);
         response.setPlacesNotVisited(notVisitedRoutes.size());
 
         List<WalkStatsResponse.NotVisitedPlace> notVisited = notVisitedRoutes.stream().map(route -> {
